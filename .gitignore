@@ -1,0 +1,15 @@
+# Ignore compiled Python files
+*.pyc
+
+# Ignore the virtual environment directory
+venv/
+
+# Ignore IDE specific files
+.idea/
+.vscode/
+
+# Ignore any files in the "secret" directory
+secret/
+
+# Ignore log files
+*.log
