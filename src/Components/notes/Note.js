@@ -7,10 +7,12 @@ import { Link } from 'react-router-dom';
 
 function Note({ note }) {
     const dispatch = useDispatch();
-    const deleteNoteHandler = () => {
+    const deleteNoteHandler = (event) => {
+        event.preventDefault(); 
         dispatch(deleteNote(note));
     }
-    const toggleFavoriteHandler = () => {
+    const toggleFavoriteHandler = (event) => {
+        event.preventDefault(); 
         dispatch(toggleFav(note));
     }
     const editNoteHandler = () => {

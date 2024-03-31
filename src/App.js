@@ -10,12 +10,12 @@ import { useSelector } from 'react-redux';
 import { useFirestoreConnect } from 'react-redux-firebase';
 import moment from 'moment';
 import Note from './Components/notes/Note.js';
+import Todo from './Components/notes/Todo.js';
 import AddTodoForm from './Components/AddTodo.js';
 
 
 
 let constTitle = "";
-let constContent = "";
 let constNote = "";
 
 export const sendConstNote = () => {
@@ -112,7 +112,6 @@ export async function resetingInputAI() {
                       <textarea id="message" name="message" class="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
                     </div>
                   </div>
-                  <div className="spinner-container"></div>
 `;
   const aiBtn = document.querySelector(".genrate_ai");
   const resetBtn = document.querySelector(".reset_ai");
@@ -191,10 +190,12 @@ function App() {
   // const handleAddNote = () => {
   //   AddNote(); // Call the run() function when the button is clicked
   // };
-  useFirestoreConnect([{ collection: 'notes', where: ['type', '==', 1], orderBy: ['createdAt', 'desc'] }]);
-  const notes = useSelector(state => state.firestore.ordered.notes);
-  useFirestoreConnect([{ collection: 'notes', where: ['type', '==', 2], orderBy: ['createdAt', 'desc'] }]);
-  const todo = useSelector(state => state.firestore.ordered.notes);
+  useFirestoreConnect([{ collection: 'notes', orderBy: ['createdAt', 'desc'] }]);
+  const total = useSelector(state => state.firestore.ordered.notes);
+
+  const notes = total && total.filter(note => note.type === 1);
+  const todos = total && total.filter(note => note.type === 2);
+  
 
   return (
     <div className="App">
@@ -302,6 +303,14 @@ function App() {
 
               </div>
             </div>
+            <section className="text-gray-600 body-font">
+            <div className="container px-5 py-8 mx-auto" bis_skin_checked="1">
+              <h1 className="sm:text-3xl text-2xl font-medium title-font mb-2 text-gray-900">Notes</h1>
+              <div className="flex flex-wrap -m-4" bis_skin_checked="1">
+                {todos && todos.map(note => <Todo note={note} key={note.id}  ></Todo>)}
+              </div>
+            </div>
+          </section>
           </div>
         </div>
       </div>
