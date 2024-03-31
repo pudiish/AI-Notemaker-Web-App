@@ -34,7 +34,6 @@ function AddNoteForm() {
     }
     const preview = document.querySelector(".note_preview");
     dispatch(addNote({ constTitle, constContent,type }));
-    // title.value = "";
     resetingInputAI();
   }
 

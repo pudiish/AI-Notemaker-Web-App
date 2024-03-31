@@ -192,33 +192,29 @@ function App() {
   // };
   useFirestoreConnect([{ collection: 'notes', orderBy: ['createdAt', 'desc'] }]);
   const total = useSelector(state => state.firestore.ordered.notes);
+  const totalFav = total && total.filter(note => note.favorite === true);
+  const totalNonFav = total && total.filter(note => note.favorite === false);
 
-  const notes = total && total.filter(note => note.type === 1);
-  const todos = total && total.filter(note => note.type === 2);
+  const notesFav = total && totalFav.filter(note => note.type === 1);
+  const notesNonFav = total && totalNonFav.filter(note => note.type === 1);
+
+  const todosFav = total && totalFav.filter(note => note.type === 2);
+  const todosNonFav = total && totalNonFav.filter(note => note.type === 2);
   
 
   return (
     <div className="App">
       <header className="text-gray-600 body-font border-b-2 border-grey-500">
-        <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center" bis_skin_checked="1">
-          <a className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-            </svg>
-            <span className="ml-3 text-xl">Jugad Notes</span>
-          </a>
-          <nav className="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-gray-400	flex flex-wrap items-center text-base justify-center">
-            <a className="mr-5 hover:text-gray-900">First Link</a>
-            <a className="mr-5 hover:text-gray-900">Second Link</a>
-            <a className="mr-5 hover:text-gray-900">Third Link</a>
-            <a className="mr-5 hover:text-gray-900">Fourth Link</a>
-          </nav>
-          {/* <Link exact to="new_notes" className="logo">
-    <button className="add-new bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
-    <span className="material-symbols-outlined">add</span>  <span>New Notes</span>
-</button></Link> */}
-        </div>
-      </header>
+  <div className="container mx-auto flex items-center justify-center p-5">
+    <a className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+      </svg>
+      <span className="ml-3 text-xl">Jugad Notes</span>
+    </a>
+  </div>
+</header>
+
       <div className="flex">
         <div className="w-3/4">
           <section className="text-gray-600 body-font relative ">
@@ -257,7 +253,8 @@ function App() {
             <div className="container px-5 py-8 mx-auto" bis_skin_checked="1">
               <h1 className="sm:text-3xl text-2xl font-medium title-font mb-2 text-gray-900">Notes</h1>
               <div className="flex flex-wrap -m-4" bis_skin_checked="1">
-                {notes && notes.map(note => <Note note={note} key={note.id}  ></Note>)}
+                {notesFav && notesFav.map(note => <Note note={note} key={note.id}  ></Note>)}
+                {notesNonFav && notesNonFav.map(note => <Note note={note} key={note.id}  ></Note>)}
               </div>
             </div>
           </section>
@@ -307,7 +304,8 @@ function App() {
             <div className="container px-5 py-8 mx-auto" bis_skin_checked="1">
               <h1 className="sm:text-3xl text-2xl font-medium title-font mb-2 text-gray-900">Notes</h1>
               <div className="flex flex-wrap -m-4" bis_skin_checked="1">
-                {todos && todos.map(note => <Todo note={note} key={note.id}  ></Todo>)}
+                {todosFav && todosFav.map(note => <Todo note={note} key={note.id}  ></Todo>)}
+                {todosNonFav && todosNonFav.map(note => <Todo note={note} key={note.id}  ></Todo>)}
               </div>
             </div>
           </section>

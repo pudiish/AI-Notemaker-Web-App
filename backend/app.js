@@ -16,6 +16,14 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Enable CORS
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+});
+
 // Endpoint to send email
 app.post('/send-email', (req, res) => {
     const { to, subject, text, time, date } = req.body;

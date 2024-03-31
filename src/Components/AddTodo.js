@@ -3,23 +3,6 @@ import { useDispatch } from 'react-redux';
 import { addNote } from '../store/actions/noteAction';
 import axios from 'axios';
 
-const instance = axios.create({
-  baseURL: 'http://localhost:3001', // Adjust the base URL to match your server
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add an interceptor to handle preflight requests
-instance.interceptors.request.use(config => {
-  if (config.method === 'post') {
-    // Add the necessary headers for CORS preflight requests
-    config.headers['Access-Control-Allow-Origin'] = 'http://localhost:3001';
-    config.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-    config.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
-  }
-  return config;
-});
 
 
 let constTitle = "null";
@@ -53,7 +36,15 @@ function AddTodoForm() {
     try {
       let time12 = convertTo12HourFormat(Time);
       console.log(time12, Date);
-      const response = await instance.post(
+  
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      };
+  
+      const response = await axios.post(
         'http://localhost:3001/send-email',
         {
           to: To,
@@ -62,20 +53,16 @@ function AddTodoForm() {
           time: Time,
           date: Date
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          mode: 'cors'
-        }
+        config
       );
-
+  
       console.log(response.data);
       setSendEmailStatus("Successfully sent email!");
     } catch (error) {
       console.error('Error:', error);
     }
   };
+  
 
   const handleClick = () => {
     const title = document.getElementById("todo");
@@ -83,11 +70,14 @@ function AddTodoForm() {
     type = 2;
 
     if (checkbox.checked) {
-      const email = document.getElementById("email").value;
-      const date = document.getElementById("date").value;
-      const time = document.getElementById("time").value;
+      const email = document.getElementById("email");
+      const date = document.getElementById("date");
+      const time = document.getElementById("time");
       console.log("Sending email...");
-      SendMail(email, constTitle, constTitle, time, date);
+      SendMail(email.value, constTitle, constTitle, time.value, date.value);
+      email.value = '';
+      date.value = '';
+      time.value = '';
     }
 
     dispatch(addNote({
