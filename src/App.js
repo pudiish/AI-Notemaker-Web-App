@@ -2,10 +2,15 @@ import logo from './logo.svg';
 import './App.css';
 import new_notes from './Components/templets.js';
 import { Link } from 'react-router-dom';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addNote } from './store/actions/noteAction';
 import AddNoteForm from './Components/AddNote.js';
+import { useSelector } from 'react-redux';
+import { useFirestoreConnect } from 'react-redux-firebase';
+import moment from 'moment';
+import Note from './Components/notes/Note.js';
+import AddTodoForm from './Components/AddTodo.js';
 
 
 
@@ -13,10 +18,10 @@ let constTitle = "";
 let constContent = "";
 let constNote = "";
 
-export const  sendConstNote = () => {
+export const sendConstNote = () => {
   return constNote;
 }
-export const  sendConstTitle = () => {
+export const sendConstTitle = () => {
   return constTitle;
 }
 
@@ -31,12 +36,14 @@ const MODEL_NAME = "gemini-1.0-pro";
 const API_KEY = "AIzaSyCw5OjvO_BLKZ0ahpHRblKSqV_Z6kYCxGM";
 
 async function run() {
-  const preview = document.querySelector(".note_preview");
+  const overlay_container = document.querySelector(".spinner-container");
   const title = document.querySelector("#name").value;
   const content = document.querySelector("#message").value;
   if (content === "" || title === "") {
     return;
   }
+  // overlay_container.classList.add("loading-spinner");
+  const preview = document.querySelector(".note_preview");
   constTitle = title;
   const genAI = new GoogleGenerativeAI(API_KEY);
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
@@ -76,6 +83,7 @@ async function run() {
     generationConfig,
     safetySettings,
   });
+  // overlay_container.classList.remove("loading-spinner");
 
   const response = result.response;
   constNote = response.text().replace('```', '').replace('html', '');
@@ -104,6 +112,7 @@ export async function resetingInputAI() {
                       <textarea id="message" name="message" class="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
                     </div>
                   </div>
+                  <div className="spinner-container"></div>
 `;
   const aiBtn = document.querySelector(".genrate_ai");
   const resetBtn = document.querySelector(".reset_ai");
@@ -142,15 +151,50 @@ export async function resetingInputAI() {
 
 
 function App() {
-  const handleClickAi = () => {
-    run(); // Call the run() function when the button is clicked
+  const [loading, setLoading] = useState(false); // State variable to track loading
+  const [isChecked, setIsChecked] = useState(false);
+  let todoEmail = "";
+  let todoContent = "";
+  let timeDate = "";
+
+
+
+  const handleCheckboxChange = () => {
+
+    setIsChecked(!isChecked); // Toggle the isChecked state
+    if (isChecked) {
+      document.querySelector(".remainder-container").style.display = "none";
+    }
+    else {
+      document.querySelector(".remainder-container").style.display = "block";
+    }
   };
+
+  const handleClickAi = async () => {
+    setLoading(true); // Set loading to true when AI button is clicked
+
+    try {
+      await run(); // Call the run() function when the button is clicked
+    } catch (error) {
+      console.error('Error occurred during AI processing:', error);
+    } finally {
+      setLoading(false);
+
+      // overlay_container.classList.remove("loading-overlay"); // Set loading to false when AI process completes or encounters an error
+    }
+  };
+
+
   const handleClickReset = () => {
     resetingInputAI(); // Call the run() function when the button is clicked
   };
   // const handleAddNote = () => {
   //   AddNote(); // Call the run() function when the button is clicked
   // };
+  useFirestoreConnect([{ collection: 'notes', where: ['type', '==', 1], orderBy: ['createdAt', 'desc'] }]);
+  const notes = useSelector(state => state.firestore.ordered.notes);
+  useFirestoreConnect([{ collection: 'notes', where: ['type', '==', 2], orderBy: ['createdAt', 'desc'] }]);
+  const todo = useSelector(state => state.firestore.ordered.notes);
 
   return (
     <div className="App">
@@ -177,9 +221,9 @@ function App() {
       <div className="flex">
         <div className="w-3/4">
           <section className="text-gray-600 body-font relative ">
-            <div className="container px-5 py-8 mx-auto" bis_skin_checked="1">
+            <div className=" container px-5 py-8 mx-auto" bis_skin_checked="1">
               <h1 className="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">Add Note</h1>
-              <div className="lg:w-1/2 md:w-2/3 mx-auto" bis_skin_checked="1">
+              <div className="lg:w-1/2 md:w-2/3 mx-auto " bis_skin_checked="1">
                 <div className="flex flex-wrap -m-2 items-center justify-center note_preview" bis_skin_checked="1">
                   <div className="p-2 w-full" bis_skin_checked="1">
                     <div className="flex" bis_skin_checked="1">
@@ -193,12 +237,15 @@ function App() {
                       <textarea id="message" name="message" className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
                     </div>
                   </div>
+                  <div className="spinner-container"></div>
 
                 </div>
                 <div className="p-2 w-full flex" bis_skin_checked="1">
                   <AddNoteForm />
                   {/* <button onClick={handleAddNote} className="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">Add</button> */}
                   <button onClick={handleClickAi} className="genrate_ai flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">Ai</button>
+                  {/* {loading && <div className="loading-overlay">
+                  <div className="loading-spinner"></div></div>} */}
                   <button onClick={handleClickReset} className="reset_ai flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">Reset</button>
                 </div>
               </div>
@@ -209,75 +256,7 @@ function App() {
             <div className="container px-5 py-8 mx-auto" bis_skin_checked="1">
               <h1 className="sm:text-3xl text-2xl font-medium title-font mb-2 text-gray-900">Notes</h1>
               <div className="flex flex-wrap -m-4" bis_skin_checked="1">
-                <div className="xl:w-1/3 md:w-1/2 p-4" bis_skin_checked="1">
-                  <div className="border border-gray-200 p-6 rounded-lg" bis_skin_checked="1">
-                    <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 mb-4" bis_skin_checked="1">
-                      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-6 h-6" viewBox="0 0 24 24">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                      </svg>
-                    </div>
-                    <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Shooting Stars</h2>
-                    <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-                  </div>
-                </div>
-                <div className="xl:w-1/3 md:w-1/2 p-4" bis_skin_checked="1">
-                  <div className="border border-gray-200 p-6 rounded-lg" bis_skin_checked="1">
-                    <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 mb-4" bis_skin_checked="1">
-                      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-6 h-6" viewBox="0 0 24 24">
-                        <circle cx="6" cy="6" r="3"></circle>
-                        <circle cx="6" cy="18" r="3"></circle>
-                        <path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"></path>
-                      </svg>
-                    </div>
-                    <h2 className="text-lg text-gray-900 font-medium title-font mb-2">The Catalyzer</h2>
-                    <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-                  </div>
-                </div>
-                <div className="xl:w-1/3 md:w-1/2 p-4" bis_skin_checked="1">
-                  <div className="border border-gray-200 p-6 rounded-lg" bis_skin_checked="1">
-                    <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 mb-4" bis_skin_checked="1">
-                      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-6 h-6" viewBox="0 0 24 24">
-                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                    </div>
-                    <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Neptune</h2>
-                    <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-                  </div>
-                </div>
-                <div className="xl:w-1/3 md:w-1/2 p-4" bis_skin_checked="1">
-                  <div className="border border-gray-200 p-6 rounded-lg" bis_skin_checked="1">
-                    <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 mb-4" bis_skin_checked="1">
-                      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-6 h-6" viewBox="0 0 24 24">
-                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"></path>
-                      </svg>
-                    </div>
-                    <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Melanchole</h2>
-                    <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-                  </div>
-                </div>
-                <div className="xl:w-1/3 md:w-1/2 p-4" bis_skin_checked="1">
-                  <div className="border border-gray-200 p-6 rounded-lg" bis_skin_checked="1">
-                    <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 mb-4" bis_skin_checked="1">
-                      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-6 h-6" viewBox="0 0 24 24">
-                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-                      </svg>
-                    </div>
-                    <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Bunker</h2>
-                    <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-                  </div>
-                </div>
-                <div className="xl:w-1/3 md:w-1/2 p-4" bis_skin_checked="1">
-                  <div className="border border-gray-200 p-6 rounded-lg" bis_skin_checked="1">
-                    <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 mb-4" bis_skin_checked="1">
-                      <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-6 h-6" viewBox="0 0 24 24">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                      </svg>
-                    </div>
-                    <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Ramona Falls</h2>
-                    <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-                  </div>
-                </div>
+                {notes && notes.map(note => <Note note={note} key={note.id}  ></Note>)}
               </div>
             </div>
           </section>
@@ -289,15 +268,37 @@ function App() {
             <h1 className="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">To-Do</h1>
             <div className="w-full" bis_skin_checked="1">
               <div className="flex flex-wrap -m-2" bis_skin_checked="1">
-                <div className="p-2 w-full" bis_skin_checked="1">
+                <div className="p-1 w-full" bis_skin_checked="1">
                   <div className="flex w-full" bis_skin_checked="1">
-                    <label for="name" className="leading-9 text-m text-gray-600 mx-4">Title</label>
-                    <input type="text" id="name" name="name" className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+                    {/* <label for="name" className="leading-9 text-m text-gray-600 mx-4">Title</label> */}
+                    <input type="text" id="todo" name="todo" className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+                  </div>
+                  <div class="flex items-center mx-1">
+                    <input
+                      type="checkbox"
+                      id="checked-checkbox"
+                      checked={isChecked} // Set the checked state based on the isChecked variable
+                      onChange={handleCheckboxChange} // Call handleCheckboxChange when the checkbox is clicked
+                      className="w-4 my-5 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded "
+                    />
+                    <label for="checked-checkbox" class="ms-2 text-sm font-medium text-gray-900">Send Reminder</label>
+                  </div>
+                  <div className="remainder-container w-full text-left" bis_skin_checked="1">
+                    {/* input of email id and time data */}
+                    <label for="name" className="leading-9 text-m text-gray-600 mx-4">Email</label>
+                    <input type="email" id="email" name="email" className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+                    <div className='flex justify-between m-0'>
+                      <label for="name" className="leading-9 text-m text-gray-600 mx-4">Time</label>
+                      <label for="name" className="leading-9 text-m text-gray-600 mx-4">Date</label>
+                    </div>
+                    <input type="time" id="time" name="time" className="w-1/2 bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+                    <input type="date" id="date" name="date" className="w-1/2 bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
                   </div>
                 </div>
-                <div className="p-2 w-full" bis_skin_checked="1">
+                {/* <div className="p-2 w-full" bis_skin_checked="1">
                   <button className="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">Add</button>
-                </div>
+                </div> */}
+                <AddTodoForm />
 
               </div>
             </div>

@@ -6,6 +6,7 @@ import { sendConstNote,sendConstTitle,resetingInputAI } from '../App';
 let constTitle = "";
 let constContent = "";
 let constNote = "";
+let type=1;
 
 function AddNoteForm() {
   const dispatch = useDispatch();
@@ -32,13 +33,13 @@ function AddNoteForm() {
       
     }
     const preview = document.querySelector(".note_preview");
-    dispatch(addNote({ constTitle, constContent }));
+    dispatch(addNote({ constTitle, constContent,type }));
     title.value = "";
     resetingInputAI();
   }
 
   return (
-    <div className="p-2 w-full flex" bis_skin_checked="1">
+    <div className="w-full flex" bis_skin_checked="1">
       <button onClick={handleClick} className="flex mx-auto text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">Add</button>
     </div>
   );

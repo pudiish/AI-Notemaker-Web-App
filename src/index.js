@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import './index.css';
 import App from './App.js';
-import New_notes from './Components/templets.js';
 import reportWebVitals from './reportWebVitals.js';
 import { createStore, applyMiddleware, compose } from 'redux';
 import rootReducer from './store/reducers/rootReducer';
@@ -13,6 +13,7 @@ import { createFirestoreInstance, getFirestore } from 'redux-firestore';
 import firebase from 'firebase/app';
 import fbConfig from './configs/fbConfig';
 import { reduxFirestore } from 'redux-firestore';
+import NoteDetail from './Components/notes/NoteDetail.js';
 
 
 const store = createStore(rootReducer, compose(
@@ -30,7 +31,12 @@ ReactDOM.render(
   <Provider store={store}>
     <ReactReduxFirebaseProvider {...rrfProps}>
       <React.StrictMode>
-        <App />
+      <Router>
+      <Switch>
+        <Route exact path='/' component={App}></Route>
+        <Route path='/note/:id' component={NoteDetail}></Route>
+      </Switch>
+    </Router>
       </React.StrictMode>
     </ReactReduxFirebaseProvider>
   </Provider>,
