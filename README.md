@@ -3,6 +3,11 @@
 
 Welcome to the To-Do Web App, a powerful and dynamic tool for managing your tasks and notes. This app is built using the MERN stack, Redux, Firebase, and Firestore, and incorporates the use of the Gemini API, nodemailer, and AI technology for generating notes.
 
+## Demo
+
+Check out the [demo video](https://drive.google.com/file/d/1HaHn19vbXT00ud1JDlv3-6dK_vaIkFCN/view) to see the To-Do Web App in action!
+
+
 ## Features
 
 - **Add and Manage Notes:** Seamlessly add, organize, and prioritize your tasks and notes within a single, intuitive interface.
