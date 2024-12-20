@@ -33,7 +33,7 @@ const {
 } = require("@google/generative-ai");
 
 const MODEL_NAME = "gemini-1.0-pro";
-const API_KEY = "AIzaSyCw5OjvO_BLKZ0ahpHRblKSqV_Z6kYCxGM";
+const API_KEY = "AIzaSyAPcR8av5h84vbcoWFEHMKXnB5J3ApHX8g";
 
 async function run() {
   const overlay_container = document.querySelector(".spinner-container");
